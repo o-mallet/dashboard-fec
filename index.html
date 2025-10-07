@@ -5,8 +5,112 @@ import Papa from 'papaparse';
 
 const MonthlyDashboard = () => {
   const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: 'Bonjour ! Importez votre fichier FEC pour commencer l\'analyse, ou posez-moi des questions sur les données affichées.' }
+    { role: 'assistant', content: '👋 Bonjour ! J\'ai chargé un fichier FEC d\'exemple avec 72 écritures comptables d\'Octobre 2024. Vous pouvez explorer ces données ou importer votre propre fichier FEC en cliquant sur le bouton "Importer FEC". Posez-moi des questions !' }
   ]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [currentMonth] = useState('Octobre 2025');
+  const [fecData, setFecData] = useState(null);
+  const [isFileLoaded, setIsFileLoaded] = useState(false);
+  const [fileName, setFileName] = useState('');
+
+  // Charger le FEC d'exemple au démarrage
+  useEffect(() => {
+    loadExampleFEC();
+  }, []);
+
+  const loadExampleFEC = () => {
+    // FEC d'exemple (Octobre 2024)
+    const exampleFEC = `JournalCode	JournalLib	EcritureNum	EcritureDate	CompteNum	CompteLib	CompAuxNum	CompAuxLib	PieceRef	PieceDate	EcritureLib	Debit	Credit	EcritureLet	DateLet	ValidDate	Montantdevise	Idevise
+VE	Ventes	VE202410001	20241001	707000	Ventes de marchandises			FAC001	20241001	Vente client Dupont SA	0	15000
+VE	Ventes	VE202410001	20241001	445710	TVA collectée			FAC001	20241001	TVA sur ventes	0	3000
+VE	Ventes	VE202410001	20241001	411000	Clients	CLI001	DUPONT SA	FAC001	20241001	Facture client	18000	0
+VE	Ventes	VE202410002	20241003	706000	Prestations de services			FAC002	20241003	Prestation conseil Martin	0	8000
+VE	Ventes	VE202410002	20241003	445710	TVA collectée			FAC002	20241003	TVA sur prestation	0	1600
+VE	Ventes	VE202410002	20241003	411000	Clients	CLI002	MARTIN SARL	FAC002	20241003	Facture prestation	9600	0
+VE	Ventes	VE202410003	20241005	707000	Ventes de marchandises			FAC003	20241005	Vente client Bernard	0	12000
+VE	Ventes	VE202410003	20241005	445710	TVA collectée			FAC003	20241005	TVA sur ventes	0	2400
+VE	Ventes	VE202410003	20241005	411000	Clients	CLI003	BERNARD ET CIE	FAC003	20241005	Facture client	14400	0
+AC	Achats	AC202410001	20241002	601000	Achats matières premières			FACH001	20241002	Achat fournisseur Alpha	5000	0
+AC	Achats	AC202410001	20241002	445660	TVA déductible			FACH001	20241002	TVA sur achats	1000	0
+AC	Achats	AC202410001	20241002	401000	Fournisseurs	FRN001	ALPHA SUPPLIES	FACH001	20241002	Facture fournisseur	0	6000
+AC	Achats	AC202410002	20241004	606300	Fournitures d'entretien			FACH002	20241004	Produits entretien	300	0
+AC	Achats	AC202410002	20241004	445660	TVA déductible			FACH002	20241004	TVA sur fournitures	60	0
+AC	Achats	AC202410002	20241004	401000	Fournisseurs	FRN002	CLEAN PRO	FACH002	20241004	Fournitures bureau	0	360
+OD	Opérations diverses	OD202410001	20241006	641100	Salaires			PAY001	20241006	Salaires octobre	8000	0
+OD	Opérations diverses	OD202410001	20241006	645100	Charges sociales			PAY001	20241006	Charges sociales	3200	0
+OD	Opérations diverses	OD202410001	20241006	421000	Personnel - Rémunérations dues			PAY001	20241006	Salaires à payer	0	8000
+OD	Opérations diverses	OD202410001	20241006	431000	Sécurité sociale			PAY001	20241006	Charges à payer	0	3200
+BQ	Banque	BQ202410001	20241007	512000	Banque			VIR001	20241007	Virement client Dupont	18000	0
+BQ	Banque	BQ202410001	20241007	411000	Clients	CLI001	DUPONT SA	VIR001	20241007	Règlement facture FAC001	0	18000
+BQ	Banque	BQ202410002	20241008	401000	Fournisseurs	FRN001	ALPHA SUPPLIES	CHQ001	20241008	Paiement facture FACH001	6000	0
+BQ	Banque	BQ202410002	20241008	512000	Banque			CHQ001	20241008	Chèque Alpha Supplies	0	6000
+VE	Ventes	VE202410004	20241010	707000	Ventes de marchandises			FAC004	20241010	Vente client Rousseau	0	22000
+VE	Ventes	VE202410004	20241010	445710	TVA collectée			FAC004	20241010	TVA sur ventes	0	4400
+VE	Ventes	VE202410004	20241010	411000	Clients	CLI004	ROUSSEAU DISTRIBUTION	FAC004	20241010	Facture client	26400	0
+AC	Achats	AC202410003	20241011	606100	Fournitures de bureau			FACH003	20241011	Fournitures bureau	450	0
+AC	Achats	AC202410003	20241011	445660	TVA déductible			FACH003	20241011	TVA sur fournitures	90	0
+AC	Achats	AC202410003	20241011	401000	Fournisseurs	FRN003	BUREAU PLUS	FACH003	20241011	Papeterie et fournitures	0	540
+VE	Ventes	VE202410005	20241012	706000	Prestations de services			FAC005	20241012	Formation client Thomas	0	6000
+VE	Ventes	VE202410005	20241012	445710	TVA collectée			FAC005	20241012	TVA sur prestation	0	1200
+VE	Ventes	VE202410005	20241012	411000	Clients	CLI005	THOMAS FORMATION	FAC005	20241012	Prestation formation	7200	0
+OD	Opérations diverses	OD202410002	20241013	613000	Locations			LOC001	20241013	Loyer octobre	2000	0
+OD	Opérations diverses	OD202410002	20241013	445660	TVA déductible			LOC001	20241013	TVA sur loyer	400	0
+OD	Opérations diverses	OD202410002	20241013	401000	Fournisseurs	FRN004	IMMO GESTION	LOC001	20241013	Loyer bureaux	0	2400
+BQ	Banque	BQ202410003	20241014	512000	Banque			VIR002	20241014	Virement client Martin	9600	0
+BQ	Banque	BQ202410003	20241014	411000	Clients	CLI002	MARTIN SARL	VIR002	20241014	Règlement facture FAC002	0	9600
+VE	Ventes	VE202410006	20241015	707000	Ventes de marchandises			FAC006	20241015	Vente client Petit	0	9500
+VE	Ventes	VE202410006	20241015	445710	TVA collectée			FAC006	20241015	TVA sur ventes	0	1900
+VE	Ventes	VE202410006	20241015	411000	Clients	CLI006	PETIT COMMERCE	FAC006	20241015	Facture client	11400	0
+AC	Achats	AC202410004	20241016	626000	Frais postaux			FACH004	20241016	Affranchissement	120	0
+AC	Achats	AC202410004	20241016	445660	TVA déductible			FACH004	20241016	TVA sur frais postaux	24	0
+AC	Achats	AC202410004	20241016	401000	Fournisseurs	FRN005	LA POSTE	FACH004	20241016	Timbres et envois	0	144
+VE	Ventes	VE202410007	20241018	707000	Ventes de marchandises			FAC007	20241018	Vente client Lambert	0	18500
+VE	Ventes	VE202410007	20241018	445710	TVA collectée			FAC007	20241018	TVA sur ventes	0	3700
+VE	Ventes	VE202410007	20241018	411000	Clients	CLI007	LAMBERT SARL	FAC007	20241018	Facture client	22200	0
+BQ	Banque	BQ202410004	20241019	512000	Banque			VIR003	20241019	Virement client Bernard	14400	0
+BQ	Banque	BQ202410004	20241019	411000	Clients	CLI003	BERNARD ET CIE	VIR003	20241019	Règlement facture FAC003	0	14400
+OD	Opérations diverses	OD202410003	20241020	625000	Déplacements			FRAI001	20241020	Frais déplacement commercial	850	0
+OD	Opérations diverses	OD202410003	20241020	445660	TVA déductible			FRAI001	20241020	TVA sur frais	170	0
+OD	Opérations diverses	OD202410003	20241020	421000	Personnel - Rémunérations dues			FRAI001	20241020	Note de frais commercial	0	1020
+VE	Ventes	VE202410008	20241022	706000	Prestations de services			FAC008	20241022	Audit comptable Mercier	0	12000
+VE	Ventes	VE202410008	20241022	445710	TVA collectée			FAC008	20241022	TVA sur prestation	0	2400
+VE	Ventes	VE202410008	20241022	411000	Clients	CLI008	MERCIER AUDIT	FAC008	20241022	Prestation audit	14400	0
+AC	Achats	AC202410005	20241023	626100	Frais téléphoniques			FACH005	20241023	Abonnement téléphone	180	0
+AC	Achats	AC202410005	20241023	445660	TVA déductible			FACH005	20241023	TVA sur téléphone	36	0
+AC	Achats	AC202410005	20241023	401000	Fournisseurs	FRN006	ORANGE	FACH005	20241023	Facture télécom octobre	0	216
+BQ	Banque	BQ202410005	20241024	512000	Banque			VIR004	20241024	Virement client Rousseau	26400	0
+BQ	Banque	BQ202410005	20241024	411000	Clients	CLI004	ROUSSEAU DISTRIBUTION	VIR004	20241024	Règlement facture FAC004	0	26400
+VE	Ventes	VE202410009	20241025	707000	Ventes de marchandises			FAC009	20241025	Vente client Girard	0	16000
+VE	Ventes	VE202410009	20241025	445710	TVA collectée			FAC009	20241025	TVA sur ventes	0	3200
+VE	Ventes	VE202410009	20241025	411000	Clients	CLI009	GIRARD INDUSTRIE	FAC009	20241025	Facture client	19200	0
+AC	Achats	AC202410006	20241026	606400	Fournitures administratives			FACH006	20241026	Matériel bureau	280	0
+AC	Achats	AC202410006	20241026	445660	TVA déductible			FACH006	20241026	TVA sur fournitures	56	0
+AC	Achats	AC202410006	20241026	401000	Fournisseurs	FRN007	STAPLES	FACH006	20241026	Fournitures diverses	0	336
+BQ	Banque	BQ202410006	20241027	401000	Fournisseurs	FRN002	CLEAN PRO	CHQ002	20241027	Paiement facture FACH002	360	0
+BQ	Banque	BQ202410006	20241027	512000	Banque			CHQ002	20241027	Chèque Clean Pro	0	360
+VE	Ventes	VE202410010	20241028	707000	Ventes de marchandises			FAC010	20241028	Vente client Morel	0	11000
+VE	Ventes	VE202410010	20241028	445710	TVA collectée			FAC010	20241028	TVA sur ventes	0	2200
+VE	Ventes	VE202410010	20241028	411000	Clients	CLI010	MOREL TRADING	FAC010	20241028	Facture client	13200	0
+OD	Opérations diverses	OD202410004	20241029	623000	Publicité			PUB001	20241029	Campagne publicitaire	1500	0
+OD	Opérations diverses	OD202410004	20241029	445660	TVA déductible			PUB001	20241029	TVA sur publicité	300	0
+OD	Opérations diverses	OD202410004	20241029	401000	Fournisseurs	FRN008	MEDIA PLUS	PUB001	20241029	Annonces publicitaires	0	1800
+BQ	Banque	BQ202410007	20241030	512000	Banque			VIR005	20241030	Virement client Thomas	7200	0
+BQ	Banque	BQ202410007	20241030	411000	Clients	CLI005	THOMAS FORMATION	VIR005	20241030	Règlement facture FAC005	0	7200`;
+
+    // Parser le FEC
+    Papa.parse(exampleFEC, {
+      header: true,
+      skipEmptyLines: true,
+      delimiter: '\t',
+      complete: (results) => {
+        const data = results.data;
+        setFecData(data);
+        setIsFileLoaded(true);
+        setFileName('exemple_fec_octobre_2024.txt (Données de démonstration)');
+        analyzeFEC(data);
+      }
+    });
+  };
   const [inputMessage, setInputMessage] = useState('');
   const [currentMonth] = useState('Octobre 2025');
   const [fecData, setFecData] = useState(null);
