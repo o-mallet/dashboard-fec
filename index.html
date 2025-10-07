@@ -1,478 +1,443 @@
-import React, { useState, useEffect } from 'react';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Users, DollarSign, ShoppingCart, MessageSquare, Send, Sparkles, Upload, FileText, Check } from 'lucide-react';
-import Papa from 'papaparse';
-
-const MonthlyDashboard = () => {
-  const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: '👋 Bonjour ! J\'ai chargé un fichier FEC d\'exemple avec 72 écritures comptables d\'Octobre 2024. Vous pouvez explorer ces données ou importer votre propre fichier FEC en cliquant sur le bouton "Importer FEC". Posez-moi des questions !' }
-  ]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [currentMonth] = useState('Octobre 2025');
-  const [fecData, setFecData] = useState(null);
-  const [isFileLoaded, setIsFileLoaded] = useState(false);
-  const [fileName, setFileName] = useState('');
-
-  // Charger le FEC d'exemple au démarrage
-  useEffect(() => {
-    loadExampleFEC();
-  }, []);
-
-  const loadExampleFEC = () => {
-    // FEC d'exemple (Octobre 2024)
-    const exampleFEC = `JournalCode	JournalLib	EcritureNum	EcritureDate	CompteNum	CompteLib	CompAuxNum	CompAuxLib	PieceRef	PieceDate	EcritureLib	Debit	Credit	EcritureLet	DateLet	ValidDate	Montantdevise	Idevise
-VE	Ventes	VE202410001	20241001	707000	Ventes de marchandises			FAC001	20241001	Vente client Dupont SA	0	15000
-VE	Ventes	VE202410001	20241001	445710	TVA collectée			FAC001	20241001	TVA sur ventes	0	3000
-VE	Ventes	VE202410001	20241001	411000	Clients	CLI001	DUPONT SA	FAC001	20241001	Facture client	18000	0
-VE	Ventes	VE202410002	20241003	706000	Prestations de services			FAC002	20241003	Prestation conseil Martin	0	8000
-VE	Ventes	VE202410002	20241003	445710	TVA collectée			FAC002	20241003	TVA sur prestation	0	1600
-VE	Ventes	VE202410002	20241003	411000	Clients	CLI002	MARTIN SARL	FAC002	20241003	Facture prestation	9600	0
-VE	Ventes	VE202410003	20241005	707000	Ventes de marchandises			FAC003	20241005	Vente client Bernard	0	12000
-VE	Ventes	VE202410003	20241005	445710	TVA collectée			FAC003	20241005	TVA sur ventes	0	2400
-VE	Ventes	VE202410003	20241005	411000	Clients	CLI003	BERNARD ET CIE	FAC003	20241005	Facture client	14400	0
-AC	Achats	AC202410001	20241002	601000	Achats matières premières			FACH001	20241002	Achat fournisseur Alpha	5000	0
-AC	Achats	AC202410001	20241002	445660	TVA déductible			FACH001	20241002	TVA sur achats	1000	0
-AC	Achats	AC202410001	20241002	401000	Fournisseurs	FRN001	ALPHA SUPPLIES	FACH001	20241002	Facture fournisseur	0	6000
-AC	Achats	AC202410002	20241004	606300	Fournitures d'entretien			FACH002	20241004	Produits entretien	300	0
-AC	Achats	AC202410002	20241004	445660	TVA déductible			FACH002	20241004	TVA sur fournitures	60	0
-AC	Achats	AC202410002	20241004	401000	Fournisseurs	FRN002	CLEAN PRO	FACH002	20241004	Fournitures bureau	0	360
-OD	Opérations diverses	OD202410001	20241006	641100	Salaires			PAY001	20241006	Salaires octobre	8000	0
-OD	Opérations diverses	OD202410001	20241006	645100	Charges sociales			PAY001	20241006	Charges sociales	3200	0
-OD	Opérations diverses	OD202410001	20241006	421000	Personnel - Rémunérations dues			PAY001	20241006	Salaires à payer	0	8000
-OD	Opérations diverses	OD202410001	20241006	431000	Sécurité sociale			PAY001	20241006	Charges à payer	0	3200
-BQ	Banque	BQ202410001	20241007	512000	Banque			VIR001	20241007	Virement client Dupont	18000	0
-BQ	Banque	BQ202410001	20241007	411000	Clients	CLI001	DUPONT SA	VIR001	20241007	Règlement facture FAC001	0	18000
-BQ	Banque	BQ202410002	20241008	401000	Fournisseurs	FRN001	ALPHA SUPPLIES	CHQ001	20241008	Paiement facture FACH001	6000	0
-BQ	Banque	BQ202410002	20241008	512000	Banque			CHQ001	20241008	Chèque Alpha Supplies	0	6000
-VE	Ventes	VE202410004	20241010	707000	Ventes de marchandises			FAC004	20241010	Vente client Rousseau	0	22000
-VE	Ventes	VE202410004	20241010	445710	TVA collectée			FAC004	20241010	TVA sur ventes	0	4400
-VE	Ventes	VE202410004	20241010	411000	Clients	CLI004	ROUSSEAU DISTRIBUTION	FAC004	20241010	Facture client	26400	0
-AC	Achats	AC202410003	20241011	606100	Fournitures de bureau			FACH003	20241011	Fournitures bureau	450	0
-AC	Achats	AC202410003	20241011	445660	TVA déductible			FACH003	20241011	TVA sur fournitures	90	0
-AC	Achats	AC202410003	20241011	401000	Fournisseurs	FRN003	BUREAU PLUS	FACH003	20241011	Papeterie et fournitures	0	540
-VE	Ventes	VE202410005	20241012	706000	Prestations de services			FAC005	20241012	Formation client Thomas	0	6000
-VE	Ventes	VE202410005	20241012	445710	TVA collectée			FAC005	20241012	TVA sur prestation	0	1200
-VE	Ventes	VE202410005	20241012	411000	Clients	CLI005	THOMAS FORMATION	FAC005	20241012	Prestation formation	7200	0
-OD	Opérations diverses	OD202410002	20241013	613000	Locations			LOC001	20241013	Loyer octobre	2000	0
-OD	Opérations diverses	OD202410002	20241013	445660	TVA déductible			LOC001	20241013	TVA sur loyer	400	0
-OD	Opérations diverses	OD202410002	20241013	401000	Fournisseurs	FRN004	IMMO GESTION	LOC001	20241013	Loyer bureaux	0	2400
-BQ	Banque	BQ202410003	20241014	512000	Banque			VIR002	20241014	Virement client Martin	9600	0
-BQ	Banque	BQ202410003	20241014	411000	Clients	CLI002	MARTIN SARL	VIR002	20241014	Règlement facture FAC002	0	9600
-VE	Ventes	VE202410006	20241015	707000	Ventes de marchandises			FAC006	20241015	Vente client Petit	0	9500
-VE	Ventes	VE202410006	20241015	445710	TVA collectée			FAC006	20241015	TVA sur ventes	0	1900
-VE	Ventes	VE202410006	20241015	411000	Clients	CLI006	PETIT COMMERCE	FAC006	20241015	Facture client	11400	0
-AC	Achats	AC202410004	20241016	626000	Frais postaux			FACH004	20241016	Affranchissement	120	0
-AC	Achats	AC202410004	20241016	445660	TVA déductible			FACH004	20241016	TVA sur frais postaux	24	0
-AC	Achats	AC202410004	20241016	401000	Fournisseurs	FRN005	LA POSTE	FACH004	20241016	Timbres et envois	0	144
-VE	Ventes	VE202410007	20241018	707000	Ventes de marchandises			FAC007	20241018	Vente client Lambert	0	18500
-VE	Ventes	VE202410007	20241018	445710	TVA collectée			FAC007	20241018	TVA sur ventes	0	3700
-VE	Ventes	VE202410007	20241018	411000	Clients	CLI007	LAMBERT SARL	FAC007	20241018	Facture client	22200	0
-BQ	Banque	BQ202410004	20241019	512000	Banque			VIR003	20241019	Virement client Bernard	14400	0
-BQ	Banque	BQ202410004	20241019	411000	Clients	CLI003	BERNARD ET CIE	VIR003	20241019	Règlement facture FAC003	0	14400
-OD	Opérations diverses	OD202410003	20241020	625000	Déplacements			FRAI001	20241020	Frais déplacement commercial	850	0
-OD	Opérations diverses	OD202410003	20241020	445660	TVA déductible			FRAI001	20241020	TVA sur frais	170	0
-OD	Opérations diverses	OD202410003	20241020	421000	Personnel - Rémunérations dues			FRAI001	20241020	Note de frais commercial	0	1020
-VE	Ventes	VE202410008	20241022	706000	Prestations de services			FAC008	20241022	Audit comptable Mercier	0	12000
-VE	Ventes	VE202410008	20241022	445710	TVA collectée			FAC008	20241022	TVA sur prestation	0	2400
-VE	Ventes	VE202410008	20241022	411000	Clients	CLI008	MERCIER AUDIT	FAC008	20241022	Prestation audit	14400	0
-AC	Achats	AC202410005	20241023	626100	Frais téléphoniques			FACH005	20241023	Abonnement téléphone	180	0
-AC	Achats	AC202410005	20241023	445660	TVA déductible			FACH005	20241023	TVA sur téléphone	36	0
-AC	Achats	AC202410005	20241023	401000	Fournisseurs	FRN006	ORANGE	FACH005	20241023	Facture télécom octobre	0	216
-BQ	Banque	BQ202410005	20241024	512000	Banque			VIR004	20241024	Virement client Rousseau	26400	0
-BQ	Banque	BQ202410005	20241024	411000	Clients	CLI004	ROUSSEAU DISTRIBUTION	VIR004	20241024	Règlement facture FAC004	0	26400
-VE	Ventes	VE202410009	20241025	707000	Ventes de marchandises			FAC009	20241025	Vente client Girard	0	16000
-VE	Ventes	VE202410009	20241025	445710	TVA collectée			FAC009	20241025	TVA sur ventes	0	3200
-VE	Ventes	VE202410009	20241025	411000	Clients	CLI009	GIRARD INDUSTRIE	FAC009	20241025	Facture client	19200	0
-AC	Achats	AC202410006	20241026	606400	Fournitures administratives			FACH006	20241026	Matériel bureau	280	0
-AC	Achats	AC202410006	20241026	445660	TVA déductible			FACH006	20241026	TVA sur fournitures	56	0
-AC	Achats	AC202410006	20241026	401000	Fournisseurs	FRN007	STAPLES	FACH006	20241026	Fournitures diverses	0	336
-BQ	Banque	BQ202410006	20241027	401000	Fournisseurs	FRN002	CLEAN PRO	CHQ002	20241027	Paiement facture FACH002	360	0
-BQ	Banque	BQ202410006	20241027	512000	Banque			CHQ002	20241027	Chèque Clean Pro	0	360
-VE	Ventes	VE202410010	20241028	707000	Ventes de marchandises			FAC010	20241028	Vente client Morel	0	11000
-VE	Ventes	VE202410010	20241028	445710	TVA collectée			FAC010	20241028	TVA sur ventes	0	2200
-VE	Ventes	VE202410010	20241028	411000	Clients	CLI010	MOREL TRADING	FAC010	20241028	Facture client	13200	0
-OD	Opérations diverses	OD202410004	20241029	623000	Publicité			PUB001	20241029	Campagne publicitaire	1500	0
-OD	Opérations diverses	OD202410004	20241029	445660	TVA déductible			PUB001	20241029	TVA sur publicité	300	0
-OD	Opérations diverses	OD202410004	20241029	401000	Fournisseurs	FRN008	MEDIA PLUS	PUB001	20241029	Annonces publicitaires	0	1800
-BQ	Banque	BQ202410007	20241030	512000	Banque			VIR005	20241030	Virement client Thomas	7200	0
-BQ	Banque	BQ202410007	20241030	411000	Clients	CLI005	THOMAS FORMATION	VIR005	20241030	Règlement facture FAC005	0	7200`;
-
-    // Parser le FEC
-    Papa.parse(exampleFEC, {
-      header: true,
-      skipEmptyLines: true,
-      delimiter: '\t',
-      complete: (results) => {
-        const data = results.data;
-        setFecData(data);
-        setIsFileLoaded(true);
-        setFileName('exemple_fec_octobre_2024.txt (Données de démonstration)');
-        analyzeFEC(data);
-      }
-    });
-  };
-  const [inputMessage, setInputMessage] = useState('');
-  const [currentMonth] = useState('Octobre 2025');
-  const [fecData, setFecData] = useState(null);
-  const [isFileLoaded, setIsFileLoaded] = useState(false);
-  const [fileName, setFileName] = useState('');
-
-  // Données par défaut (exemples)
-  const [dashboardData, setDashboardData] = useState({
-    monthlyRevenue: [
-      { name: 'Sem 1', revenus: 35000, depenses: 5300 },
-      { name: 'Sem 2', revenus: 30000, depenses: 6120 },
-      { name: 'Sem 3', revenus: 32000, depenses: 5490 },
-      { name: 'Sem 4', revenus: 33000, depenses: 5150 }
-    ],
-    categoryData: [
-      { name: 'Ventes produits', value: 104000, color: '#3b82f6' },
-      { name: 'Prestations de services', value: 26000, color: '#8b5cf6' },
-      { name: 'Autres produits', value: 0, color: '#10b981' },
-      { name: 'Divers', value: 0, color: '#f59e0b' }
-    ],
-    kpiData: [
-      { icon: DollarSign, label: 'Revenus', value: '130.0K€', change: '+12.5%', positive: true },
-      { icon: FileText, label: 'Écritures', value: '72', change: '+5.1%', positive: true },
-      { icon: ShoppingCart, label: 'Dépenses', value: '22.1K€', change: '+3.2%', positive: true },
-      { icon: TrendingUp, label: 'Marge', value: '83.0%', change: '+1.2%', positive: true }
-    ]
-  });
-
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    setFileName(file.name);
-
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      delimiter: '\t', // FEC est généralement séparé par des tabulations
-      complete: (results) => {
-        const data = results.data;
-        setFecData(data);
-        setIsFileLoaded(true);
-        
-        // Analyse automatique du FEC
-        analyzeFEC(data);
-        
-        setChatMessages(prev => [...prev, 
-          { role: 'assistant', content: `✅ Fichier FEC importé avec succès ! J'ai analysé ${data.length} écritures comptables. Je peux maintenant répondre à vos questions sur vos données réelles.` }
-        ]);
-      },
-      error: (error) => {
-        setChatMessages(prev => [...prev, 
-          { role: 'assistant', content: `❌ Erreur lors de l'import du fichier : ${error.message}. Assurez-vous qu'il s'agit d'un fichier FEC valide.` }
-        ]);
-      }
-    });
-  };
-
-  const analyzeFEC = (data) => {
-    try {
-      // Calcul des revenus et dépenses
-      let totalRevenue = 0;
-      let totalExpenses = 0;
-      let entriesCount = data.length;
-      
-      const revenuesByWeek = {};
-      const expensesByWeek = {};
-      const categoriesMap = {};
-
-      data.forEach(row => {
-        // Nettoyage des en-têtes (espaces)
-        const cleanRow = {};
-        Object.keys(row).forEach(key => {
-          cleanRow[key.trim()] = row[key];
-        });
-
-        const debit = parseFloat(cleanRow.Debit || cleanRow.Montant || 0);
-        const credit = parseFloat(cleanRow.Credit || cleanRow['Montantau crédit'] || 0);
-        const compte = cleanRow.CompteNum || cleanRow['Numéro de compte'] || '';
-        const libelle = cleanRow.CompteLib || cleanRow.Libellé || cleanRow.EcritureLib || '';
-        const date = cleanRow.EcritureDate || cleanRow.Date || '';
-
-        // Classification des comptes (plan comptable français)
-        if (compte.startsWith('7')) {
-          totalRevenue += credit;
-          const week = getWeekNumber(date);
-          revenuesByWeek[week] = (revenuesByWeek[week] || 0) + credit;
-          
-          // Catégorisation
-          const category = getCategoryFromAccount(compte, libelle);
-          categoriesMap[category] = (categoriesMap[category] || 0) + credit;
-        } else if (compte.startsWith('6')) {
-          totalExpenses += debit;
-          const week = getWeekNumber(date);
-          expensesByWeek[week] = (expensesByWeek[week] || 0) + debit;
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Comptable FEC - Analyse Intelligente</title>
+    <meta name="description" content="Dashboard comptable avec import FEC et analyse par IA">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.263.0/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
         }
-      });
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = Recharts;
+        const Papa = window.Papa;
 
-      // Préparation des données pour les graphiques
-      const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
-      const monthlyRevenue = weeks.map((week, idx) => ({
-        name: week,
-        revenus: Math.round(revenuesByWeek[idx + 1] || 0),
-        depenses: Math.round(expensesByWeek[idx + 1] || 0)
-      }));
+        // Import des icônes Lucide
+        const TrendingUp = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"}, 
+            React.createElement('polyline', {points: "22 7 13.5 15.5 8.5 10.5 2 17"}),
+            React.createElement('polyline', {points: "16 7 22 7 22 13"})
+        );
 
-      const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
-      const categoryData = Object.entries(categoriesMap).map(([name, value], idx) => ({
-        name,
-        value: Math.round(value),
-        color: colors[idx % colors.length]
-      }));
+        const Users = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"},
+            React.createElement('path', {d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}),
+            React.createElement('circle', {cx: "9", cy: "7", r: "4"}),
+            React.createElement('path', {d: "M22 21v-2a4 4 0 0 0-3-3.87"}),
+            React.createElement('path', {d: "M16 3.13a4 4 0 0 1 0 7.75"})
+        );
 
-      const margin = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100).toFixed(1) : 0;
+        const DollarSign = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"},
+            React.createElement('line', {x1: "12", y1: "1", x2: "12", y2: "23"}),
+            React.createElement('path', {d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"})
+        );
 
-      const kpiData = [
-        { icon: DollarSign, label: 'Revenus', value: formatCurrency(totalRevenue), change: '+12.5%', positive: true },
-        { icon: FileText, label: 'Écritures', value: entriesCount.toString(), change: '+5.1%', positive: true },
-        { icon: ShoppingCart, label: 'Dépenses', value: formatCurrency(totalExpenses), change: '+3.2%', positive: true },
-        { icon: TrendingUp, label: 'Marge', value: `${margin}%`, change: '+1.2%', positive: true }
-      ];
+        const ShoppingCart = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"},
+            React.createElement('circle', {cx: "9", cy: "21", r: "1"}),
+            React.createElement('circle', {cx: "20", cy: "21", r: "1"}),
+            React.createElement('path', {d: "M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"})
+        );
 
-      setDashboardData({
-        monthlyRevenue,
-        categoryData: categoryData.length > 0 ? categoryData : dashboardData.categoryData,
-        kpiData
-      });
+        const Upload = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"},
+            React.createElement('path', {d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}),
+            React.createElement('polyline', {points: "17 8 12 3 7 8"}),
+            React.createElement('line', {x1: "12", y1: "3", x2: "12", y2: "15"})
+        );
 
-    } catch (error) {
-      console.error('Erreur analyse FEC:', error);
-    }
-  };
+        const FileText = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"},
+            React.createElement('path', {d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"}),
+            React.createElement('polyline', {points: "14 2 14 8 20 8"}),
+            React.createElement('line', {x1: "16", y1: "13", x2: "8", y2: "13"}),
+            React.createElement('line', {x1: "16", y1: "17", x2: "8", y2: "17"}),
+            React.createElement('polyline', {points: "10 9 9 9 8 9"})
+        );
 
-  const getWeekNumber = (dateStr) => {
-    if (!dateStr) return 1;
-    try {
-      const date = new Date(dateStr);
-      const day = date.getDate();
-      return Math.ceil(day / 7);
-    } catch {
-      return 1;
-    }
-  };
+        const Check = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"},
+            React.createElement('polyline', {points: "20 6 9 17 4 12"})
+        );
 
-  const getCategoryFromAccount = (compte, libelle) => {
-    if (compte.startsWith('70')) return 'Ventes produits';
-    if (compte.startsWith('71')) return 'Production stockée';
-    if (compte.startsWith('72')) return 'Production immobilisée';
-    if (compte.startsWith('74')) return 'Subventions';
-    if (compte.startsWith('75')) return 'Autres produits';
-    if (compte.startsWith('76')) return 'Produits financiers';
-    if (compte.startsWith('77')) return 'Produits exceptionnels';
-    if (compte.startsWith('78')) return 'Reprises';
-    return 'Autres';
-  };
+        const Sparkles = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"},
+            React.createElement('path', {d: "m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"}),
+            React.createElement('path', {d: "M5 3v4"}),
+            React.createElement('path', {d: "M19 17v4"}),
+            React.createElement('path', {d: "M3 5h4"}),
+            React.createElement('path', {d: "M17 19h4"})
+        );
 
-  const formatCurrency = (value) => {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M€`;
-    if (value >= 1000) return `${(value / 1000).toFixed(1)}K€`;
-    return `${value.toFixed(0)}€`;
-  };
+        const Send = (props) => React.createElement('svg', {...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"},
+            React.createElement('line', {x1: "22", y1: "2", x2: "11", y2: "13"}),
+            React.createElement('polygon', {points: "22 2 15 22 11 13 2 9 22 2"})
+        );
 
-  const aiResponses = {
-    fec: "Le format FEC (Fichier des Écritures Comptables) est le format standard pour l'export des données comptables en France. Cliquez sur le bouton 'Importer FEC' et sélectionnez votre fichier (généralement .txt ou .csv).",
-    revenus: `D'après votre fichier FEC, vos revenus totaux sont de ${dashboardData.kpiData[0].value}. ${isFileLoaded ? 'Ces données proviennent de vos écritures comptables réelles.' : 'Importez votre FEC pour voir vos données réelles.'}`,
-    comptes: "Les comptes de classe 7 représentent les produits (revenus), et les comptes de classe 6 représentent les charges (dépenses). Je les ai analysés automatiquement dans votre FEC.",
-    default: isFileLoaded 
-      ? "Je peux vous aider à analyser votre FEC. Posez-moi des questions sur vos revenus, dépenses, comptes ou écritures comptables." 
-      : "Importez d'abord votre fichier FEC pour que je puisse analyser vos données comptables réelles !"
-  };
+        const MonthlyDashboard = () => {
+            const [chatMessages, setChatMessages] = useState([
+                { role: 'assistant', content: 'Bonjour ! Importez votre fichier FEC pour commencer l\'analyse, ou posez-moi des questions sur les données affichées.' }
+            ]);
+            const [inputMessage, setInputMessage] = useState('');
+            const [currentMonth] = useState('Octobre 2025');
+            const [fecData, setFecData] = useState(null);
+            const [isFileLoaded, setIsFileLoaded] = useState(false);
+            const [fileName, setFileName] = useState('');
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+            const [dashboardData, setDashboardData] = useState({
+                monthlyRevenue: [
+                    { name: 'Sem 1', revenus: 12400, depenses: 8200 },
+                    { name: 'Sem 2', revenus: 15600, depenses: 9100 },
+                    { name: 'Sem 3', revenus: 18200, depenses: 10500 },
+                    { name: 'Sem 4', revenus: 21000, depenses: 11200 }
+                ],
+                categoryData: [
+                    { name: 'Produits', value: 45000, color: '#3b82f6' },
+                    { name: 'Services', value: 28000, color: '#8b5cf6' },
+                    { name: 'Abonnements', value: 15000, color: '#10b981' },
+                    { name: 'Autres', value: 8000, color: '#f59e0b' }
+                ],
+                kpiData: [
+                    { icon: DollarSign, label: 'Revenus', value: '67.2K€', change: '+12.5%', positive: true },
+                    { icon: Users, label: 'Clients', value: '1,234', change: '+8.2%', positive: true },
+                    { icon: ShoppingCart, label: 'Écritures', value: '456', change: '+5.1%', positive: true },
+                    { icon: TrendingUp, label: 'Marge', value: '24.5%', change: '+1.2%', positive: true }
+                ]
+            });
 
-    const userMessage = { role: 'user', content: inputMessage };
-    setChatMessages(prev => [...prev, userMessage]);
+            const handleFileUpload = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
 
-    setTimeout(() => {
-      let response = aiResponses.default;
-      const msg = inputMessage.toLowerCase();
-      
-      if (msg.includes('fec') || msg.includes('import') || msg.includes('fichier')) {
-        response = aiResponses.fec;
-      } else if (msg.includes('revenu') || msg.includes('chiffre')) {
-        response = aiResponses.revenus;
-      } else if (msg.includes('compte') || msg.includes('classe')) {
-        response = aiResponses.comptes;
-      } else if (fecData && (msg.includes('analyse') || msg.includes('données'))) {
-        response = `J'ai analysé ${fecData.length} écritures comptables de votre FEC. Les revenus totaux sont de ${dashboardData.kpiData[0].value} et les dépenses de ${dashboardData.kpiData[2].value}. Que souhaitez-vous savoir de plus ?`;
-      }
+                setFileName(file.name);
 
-      setChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
-    }, 800);
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    delimiter: '\t',
+                    complete: (results) => {
+                        const data = results.data;
+                        setFecData(data);
+                        setIsFileLoaded(true);
+                        analyzeFEC(data);
+                        setChatMessages(prev => [...prev, 
+                            { role: 'assistant', content: `✅ Fichier FEC importé avec succès ! J'ai analysé ${data.length} écritures comptables. Je peux maintenant répondre à vos questions sur vos données réelles.` }
+                        ]);
+                    },
+                    error: (error) => {
+                        setChatMessages(prev => [...prev, 
+                            { role: 'assistant', content: `❌ Erreur lors de l'import du fichier : ${error.message}. Assurez-vous qu'il s'agit d'un fichier FEC valide.` }
+                        ]);
+                    }
+                });
+            };
 
-    setInputMessage('');
-  };
+            const analyzeFEC = (data) => {
+                try {
+                    let totalRevenue = 0;
+                    let totalExpenses = 0;
+                    let entriesCount = data.length;
+                    
+                    const revenuesByWeek = {};
+                    const expensesByWeek = {};
+                    const categoriesMap = {};
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Dashboard Comptable</h1>
-            <p className="text-purple-300 text-lg">{currentMonth}</p>
-          </div>
-          
-          {/* Import FEC Button */}
-          <div className="relative">
-            <input
-              type="file"
-              id="fec-upload"
-              accept=".txt,.csv"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <label
-              htmlFor="fec-upload"
-              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg cursor-pointer transition-colors"
-            >
-              {isFileLoaded ? <Check className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
-              {isFileLoaded ? 'FEC Chargé' : 'Importer FEC'}
-            </label>
-            {fileName && (
-              <p className="text-xs text-purple-300 mt-2 text-right">{fileName}</p>
-            )}
-          </div>
-        </div>
+                    data.forEach(row => {
+                        const cleanRow = {};
+                        Object.keys(row).forEach(key => {
+                            cleanRow[key.trim()] = row[key];
+                        });
 
-        {/* Status Bar */}
-        {isFileLoaded && (
-          <div className="mb-6 bg-green-500/20 border border-green-500/40 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-green-300">
-              <Check className="w-5 h-5" />
-              <span className="font-medium">Fichier FEC importé - {fecData?.length || 0} écritures analysées</span>
-            </div>
-          </div>
-        )}
+                        const debit = parseFloat(cleanRow.Debit || cleanRow.Montant || 0);
+                        const credit = parseFloat(cleanRow.Credit || cleanRow['Montantau crédit'] || 0);
+                        const compte = cleanRow.CompteNum || cleanRow['Numéro de compte'] || '';
+                        const libelle = cleanRow.CompteLib || cleanRow.Libellé || cleanRow.EcritureLib || '';
+                        const date = cleanRow.EcritureDate || cleanRow.Date || '';
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {dashboardData.kpiData.map((kpi, idx) => (
-            <div key={idx} className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-              <div className="flex items-center justify-between mb-4">
-                <kpi.icon className="w-8 h-8 text-purple-400" />
-                <span className={`text-sm font-semibold ${kpi.positive ? 'text-green-400' : 'text-red-400'}`}>
-                  {kpi.change}
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm mb-1">{kpi.label}</p>
-              <p className="text-3xl font-bold text-white">{kpi.value}</p>
-            </div>
-          ))}
-        </div>
+                        if (compte.startsWith('7')) {
+                            totalRevenue += credit;
+                            const week = getWeekNumber(date);
+                            revenuesByWeek[week] = (revenuesByWeek[week] || 0) + credit;
+                            const category = getCategoryFromAccount(compte, libelle);
+                            categoriesMap[category] = (categoriesMap[category] || 0) + credit;
+                        } else if (compte.startsWith('6')) {
+                            totalExpenses += debit;
+                            const week = getWeekNumber(date);
+                            expensesByWeek[week] = (expensesByWeek[week] || 0) + debit;
+                        }
+                    });
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Charts Section */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Revenue Chart */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-              <h3 className="text-xl font-semibold text-white mb-4">Revenus & Dépenses Mensuels</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={dashboardData.monthlyRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
-                  <XAxis dataKey="name" stroke="#fff" />
-                  <YAxis stroke="#fff" />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#1e1b4b', border: '1px solid #8b5cf6' }}
-                    labelStyle={{ color: '#fff' }}
-                  />
-                  <Legend />
-                  <Line type="monotone" dataKey="revenus" stroke="#3b82f6" strokeWidth={3} />
-                  <Line type="monotone" dataKey="depenses" stroke="#ef4444" strokeWidth={3} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+                    const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
+                    const monthlyRevenue = weeks.map((week, idx) => ({
+                        name: week,
+                        revenus: Math.round(revenuesByWeek[idx + 1] || 0),
+                        depenses: Math.round(expensesByWeek[idx + 1] || 0)
+                    }));
 
-            {/* Category Chart */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-              <h3 className="text-xl font-semibold text-white mb-4">Répartition par Catégorie</h3>
-              <div className="flex items-center justify-between">
-                <ResponsiveContainer width="50%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={dashboardData.categoryData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      dataKey="value"
-                      label
-                    >
-                      {dashboardData.categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="space-y-3">
-                  {dashboardData.categoryData.map((cat, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <div className="w-4 h-4 rounded" style={{ backgroundColor: cat.color }}></div>
-                      <div>
-                        <p className="text-white font-medium">{cat.name}</p>
-                        <p className="text-gray-400 text-sm">{cat.value.toLocaleString()}€</p>
-                      </div>
+                    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+                    const categoryData = Object.entries(categoriesMap).map(([name, value], idx) => ({
+                        name,
+                        value: Math.round(value),
+                        color: colors[idx % colors.length]
+                    }));
+
+                    const margin = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100).toFixed(1) : 0;
+
+                    const kpiData = [
+                        { icon: DollarSign, label: 'Revenus', value: formatCurrency(totalRevenue), change: '+12.5%', positive: true },
+                        { icon: FileText, label: 'Écritures', value: entriesCount.toString(), change: '+5.1%', positive: true },
+                        { icon: ShoppingCart, label: 'Dépenses', value: formatCurrency(totalExpenses), change: '+3.2%', positive: true },
+                        { icon: TrendingUp, label: 'Marge', value: `${margin}%`, change: '+1.2%', positive: true }
+                    ];
+
+                    setDashboardData({
+                        monthlyRevenue,
+                        categoryData: categoryData.length > 0 ? categoryData : dashboardData.categoryData,
+                        kpiData
+                    });
+
+                } catch (error) {
+                    console.error('Erreur analyse FEC:', error);
+                }
+            };
+
+            const getWeekNumber = (dateStr) => {
+                if (!dateStr) return 1;
+                try {
+                    const date = new Date(dateStr);
+                    const day = date.getDate();
+                    return Math.ceil(day / 7);
+                } catch {
+                    return 1;
+                }
+            };
+
+            const getCategoryFromAccount = (compte, libelle) => {
+                if (compte.startsWith('70')) return 'Ventes produits';
+                if (compte.startsWith('71')) return 'Production stockée';
+                if (compte.startsWith('72')) return 'Production immobilisée';
+                if (compte.startsWith('74')) return 'Subventions';
+                if (compte.startsWith('75')) return 'Autres produits';
+                if (compte.startsWith('76')) return 'Produits financiers';
+                if (compte.startsWith('77')) return 'Produits exceptionnels';
+                if (compte.startsWith('78')) return 'Reprises';
+                return 'Autres';
+            };
+
+            const formatCurrency = (value) => {
+                if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M€`;
+                if (value >= 1000) return `${(value / 1000).toFixed(1)}K€`;
+                return `${value.toFixed(0)}€`;
+            };
+
+            const aiResponses = {
+                fec: "Le format FEC (Fichier des Écritures Comptables) est le format standard pour l'export des données comptables en France. Cliquez sur le bouton 'Importer FEC' et sélectionnez votre fichier (généralement .txt ou .csv).",
+                revenus: `D'après votre fichier FEC, vos revenus totaux sont de ${dashboardData.kpiData[0].value}. ${isFileLoaded ? 'Ces données proviennent de vos écritures comptables réelles.' : 'Importez votre FEC pour voir vos données réelles.'}`,
+                comptes: "Les comptes de classe 7 représentent les produits (revenus), et les comptes de classe 6 représentent les charges (dépenses). Je les ai analysés automatiquement dans votre FEC.",
+                default: isFileLoaded 
+                    ? "Je peux vous aider à analyser votre FEC. Posez-moi des questions sur vos revenus, dépenses, comptes ou écritures comptables." 
+                    : "Importez d'abord votre fichier FEC pour que je puisse analyser vos données comptables réelles !"
+            };
+
+            const handleSendMessage = () => {
+                if (!inputMessage.trim()) return;
+
+                const userMessage = { role: 'user', content: inputMessage };
+                setChatMessages(prev => [...prev, userMessage]);
+
+                setTimeout(() => {
+                    let response = aiResponses.default;
+                    const msg = inputMessage.toLowerCase();
+                    
+                    if (msg.includes('fec') || msg.includes('import') || msg.includes('fichier')) {
+                        response = aiResponses.fec;
+                    } else if (msg.includes('revenu') || msg.includes('chiffre')) {
+                        response = aiResponses.revenus;
+                    } else if (msg.includes('compte') || msg.includes('classe')) {
+                        response = aiResponses.comptes;
+                    } else if (fecData && (msg.includes('analyse') || msg.includes('données'))) {
+                        response = `J'ai analysé ${fecData.length} écritures comptables de votre FEC. Les revenus totaux sont de ${dashboardData.kpiData[0].value} et les dépenses de ${dashboardData.kpiData[2].value}. Que souhaitez-vous savoir de plus ?`;
+                    }
+
+                    setChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
+                }, 800);
+
+                setInputMessage('');
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="mb-8 flex justify-between items-center">
+                            <div>
+                                <h1 className="text-4xl font-bold text-white mb-2">Dashboard Comptable</h1>
+                                <p className="text-purple-300 text-lg">{currentMonth}</p>
+                            </div>
+                            
+                            <div className="relative">
+                                <input
+                                    type="file"
+                                    id="fec-upload"
+                                    accept=".txt,.csv"
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                />
+                                <label
+                                    htmlFor="fec-upload"
+                                    className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg cursor-pointer transition-colors"
+                                >
+                                    {isFileLoaded ? <Check className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
+                                    {isFileLoaded ? 'FEC Chargé' : 'Importer FEC'}
+                                </label>
+                                {fileName && (
+                                    <p className="text-xs text-purple-300 mt-2 text-right">{fileName}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {isFileLoaded && (
+                            <div className="mb-6 bg-green-500/20 border border-green-500/40 rounded-lg p-4">
+                                <div className="flex items-center gap-2 text-green-300">
+                                    <Check className="w-5 h-5" />
+                                    <span className="font-medium">Fichier FEC importé - {fecData?.length || 0} écritures analysées</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            {dashboardData.kpiData.map((kpi, idx) => (
+                                <div key={idx} className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <kpi.icon className="w-8 h-8 text-purple-400" />
+                                        <span className={`text-sm font-semibold ${kpi.positive ? 'text-green-400' : 'text-red-400'}`}>
+                                            {kpi.change}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-300 text-sm mb-1">{kpi.label}</p>
+                                    <p className="text-3xl font-bold text-white">{kpi.value}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2 space-y-6">
+                                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                                    <h3 className="text-xl font-semibold text-white mb-4">Revenus & Dépenses Mensuels</h3>
+                                    <ResponsiveContainer width="100%" height={250}>
+                                        <LineChart data={dashboardData.monthlyRevenue}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                                            <XAxis dataKey="name" stroke="#fff" />
+                                            <YAxis stroke="#fff" />
+                                            <Tooltip 
+                                                contentStyle={{ backgroundColor: '#1e1b4b', border: '1px solid #8b5cf6' }}
+                                                labelStyle={{ color: '#fff' }}
+                                            />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="revenus" stroke="#3b82f6" strokeWidth={3} />
+                                            <Line type="monotone" dataKey="depenses" stroke="#ef4444" strokeWidth={3} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+
+                                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                                    <h3 className="text-xl font-semibold text-white mb-4">Répartition par Catégorie</h3>
+                                    <div className="flex items-center justify-between">
+                                        <ResponsiveContainer width="50%" height={200}>
+                                            <PieChart>
+                                                <Pie
+                                                    data={dashboardData.categoryData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    outerRadius={80}
+                                                    dataKey="value"
+                                                    label
+                                                >
+                                                    {dashboardData.categoryData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className="space-y-3">
+                                            {dashboardData.categoryData.map((cat, idx) => (
+                                                <div key={idx} className="flex items-center gap-3">
+                                                    <div className="w-4 h-4 rounded" style={{ backgroundColor: cat.color }}></div>
+                                                    <div>
+                                                        <p className="text-white font-medium">{cat.name}</p>
+                                                        <p className="text-gray-400 text-sm">{cat.value.toLocaleString()}€</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 flex flex-col h-[600px]">
+                                <div className="p-4 border-b border-white/20 flex items-center gap-2">
+                                    <Sparkles className="w-6 h-6 text-purple-400" />
+                                    <h3 className="text-xl font-semibold text-white">Assistant IA</h3>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                    {chatMessages.map((msg, idx) => (
+                                        <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[85%] rounded-lg p-3 ${
+                                                msg.role === 'user' 
+                                                    ? 'bg-purple-600 text-white' 
+                                                    : 'bg-white/20 text-gray-100'
+                                            }`}>
+                                                {msg.role === 'assistant' && (
+                                                    <Sparkles className="w-4 h-4 inline mr-2 text-purple-400" />
+                                                )}
+                                                <span className="text-sm">{msg.content}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="p-4 border-t border-white/20">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={inputMessage}
+                                            onChange={(e) => setInputMessage(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                            placeholder="Posez une question..."
+                                            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        />
+                                        <button
+                                            onClick={handleSendMessage}
+                                            className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-4 py-2 transition-colors"
+                                        >
+                                            <Send className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-2">
+                                        Essayez : "Analyse mon FEC", "Quels sont mes revenus ?", "Explique les comptes"
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  ))}
                 </div>
-              </div>
-            </div>
-          </div>
+            );
+        };
 
-          {/* AI Chat Section */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 flex flex-col h-[600px]">
-            <div className="p-4 border-b border-white/20 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-purple-400" />
-              <h3 className="text-xl font-semibold text-white">Assistant IA</h3>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {chatMessages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] rounded-lg p-3 ${
-                    msg.role === 'user' 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-white/20 text-gray-100'
-                  }`}>
-                    {msg.role === 'assistant' && (
-                      <Sparkles className="w-4 h-4 inline mr-2 text-purple-400" />
-                    )}
-                    <span className="text-sm">{msg.content}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-4 border-t border-white/20">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Posez une question..."
-                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <button
-                  onClick={handleSendMessage}
-                  className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-4 py-2 transition-colors"
-                >
-                  <Send className="w-5 h-5" />
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Essayez : "Analyse mon FEC", "Quels sont mes revenus ?", "Explique les comptes"
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        ReactDOM.render(<MonthlyDashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>
   );
 };
 
