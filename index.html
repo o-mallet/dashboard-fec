@@ -1,655 +1,375 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard FEC - Analyse Comptable Intelligente</title>
-    <meta name="description" content="Analysez vos données comptables en temps réel avec notre dashboard intelligent et notre assistant IA">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-        .float-animation {
-            animation: float 6s ease-in-out infinite;
-        }
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .gradient-animate {
-            background-size: 200% 200%;
-            animation: gradient 15s ease infinite;
-        }
-        .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-    </style>
-</head>
-<body class="bg-slate-900">
-    <!-- Navigation -->
-    <nav class="fixed w-full z-50 glass">
-        <div class="max-w-7xl mx-auto px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    <span class="text-2xl font-bold text-white">Dashboard<span class="text-purple-400">FEC</span></span>
-                </div>
-                <div class="hidden md:flex gap-8">
-                    <a href="#fonctionnalites" class="text-gray-300 hover:text-white transition">Fonctionnalités</a>
-                    <a href="#tarifs" class="text-gray-300 hover:text-white transition">Tarifs</a>
-                    <a href="#demo" class="text-gray-300 hover:text-white transition">Démo</a>
-                    <a href="#contact" class="text-gray-300 hover:text-white transition">Contact</a>
-                </div>
-                <a href="#demo" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition">
-                    Essayer Gratuitement
-                </a>
-            </div>
-        </div>
-    </nav>
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { TrendingUp, Users, DollarSign, ShoppingCart, MessageSquare, Send, Sparkles, Upload, FileText, Check } from 'lucide-react';
+import Papa from 'papaparse';
 
-    <!-- Hero Section -->
-    <section class="relative min-h-screen flex items-center gradient-animate bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-20">
-        <div class="max-w-7xl mx-auto px-6 py-20">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="space-y-8">
-                    <h1 class="text-5xl md:text-6xl font-bold text-white leading-tight">
-                        Analysez vos données comptables avec l'<span class="text-purple-400">IA</span>
-                    </h1>
-                    <p class="text-xl text-gray-300">
-                        Importez votre fichier FEC et obtenez instantanément des analyses intelligentes, des graphiques interactifs et des recommandations personnalisées.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="#demo" class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition transform hover:scale-105">
-                            Démarrer Gratuitement
-                        </a>
-                        <a href="#demo" class="glass text-white px-8 py-4 rounded-lg text-lg font-semibold transition hover:bg-white/20">
-                            Voir la Démo
-                        </a>
-                    </div>
-                    <div class="flex gap-8 text-center">
-                        <div>
-                            <div class="text-3xl font-bold text-purple-400">100%</div>
-                            <div class="text-gray-400">Gratuit</div>
-                        </div>
-                        <div>
-                            <div class="text-3xl font-bold text-purple-400">< 5min</div>
-                            <div class="text-gray-400">Configuration</div>
-                        </div>
-                        <div>
-                            <div class="text-3xl font-bold text-purple-400">RGPD</div>
-                            <div class="text-gray-400">Conforme</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="relative float-animation">
-                    <div class="glass rounded-2xl p-8 shadow-2xl">
-                        <div class="bg-slate-800 rounded-lg p-6 mb-4">
-                            <div class="flex items-center gap-2 mb-4">
-                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                            </div>
-                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80" alt="Dashboard Preview" class="rounded-lg w-full">
-                        </div>
-                        <div class="flex items-center gap-2 text-green-400 text-sm">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            <span>Fichier FEC analysé avec succès</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+const MonthlyDashboard = () => {
+  const [chatMessages, setChatMessages] = useState([
+    { role: 'assistant', content: 'Bonjour ! Importez votre fichier FEC pour commencer l\'analyse, ou posez-moi des questions sur les données affichées.' }
+  ]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [currentMonth] = useState('Octobre 2025');
+  const [fecData, setFecData] = useState(null);
+  const [isFileLoaded, setIsFileLoaded] = useState(false);
+  const [fileName, setFileName] = useState('');
 
-    <!-- Features Section -->
-    <section id="fonctionnalites" class="py-20 bg-slate-800">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-white mb-4">Fonctionnalités Puissantes</h2>
-                <p class="text-xl text-gray-400">Tout ce dont vous avez besoin pour analyser vos données comptables</p>
-            </div>
+  // Données par défaut (exemples)
+  const [dashboardData, setDashboardData] = useState({
+    monthlyRevenue: [
+      { name: 'Sem 1', revenus: 35000, depenses: 5300 },
+      { name: 'Sem 2', revenus: 30000, depenses: 6120 },
+      { name: 'Sem 3', revenus: 32000, depenses: 5490 },
+      { name: 'Sem 4', revenus: 33000, depenses: 5150 }
+    ],
+    categoryData: [
+      { name: 'Ventes produits', value: 104000, color: '#3b82f6' },
+      { name: 'Prestations de services', value: 26000, color: '#8b5cf6' },
+      { name: 'Autres produits', value: 0, color: '#10b981' },
+      { name: 'Divers', value: 0, color: '#f59e0b' }
+    ],
+    kpiData: [
+      { icon: DollarSign, label: 'Revenus', value: '130.0K€', change: '+12.5%', positive: true },
+      { icon: FileText, label: 'Écritures', value: '72', change: '+5.1%', positive: true },
+      { icon: ShoppingCart, label: 'Dépenses', value: '22.1K€', change: '+3.2%', positive: true },
+      { icon: TrendingUp, label: 'Marge', value: '83.0%', change: '+1.2%', positive: true }
+    ]
+  });
 
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Feature 1 -->
-                <div class="glass rounded-xl p-8 hover:transform hover:scale-105 transition">
-                    <div class="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">Import FEC Simple</h3>
-                    <p class="text-gray-400">Importez vos fichiers FEC en un clic. Format standard français supporté automatiquement.</p>
-                </div>
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-                <!-- Feature 2 -->
-                <div class="glass rounded-xl p-8 hover:transform hover:scale-105 transition">
-                    <div class="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">Visualisation Instantanée</h3>
-                    <p class="text-gray-400">Graphiques interactifs générés automatiquement. Revenus, dépenses, marges en temps réel.</p>
-                </div>
+    setFileName(file.name);
 
-                <!-- Feature 3 -->
-                <div class="glass rounded-xl p-8 hover:transform hover:scale-105 transition">
-                    <div class="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">Assistant IA Intelligent</h3>
-                    <p class="text-gray-400">Posez vos questions en langage naturel. L'IA analyse et vous conseille en temps réel.</p>
-                </div>
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      delimiter: '\t', // FEC est généralement séparé par des tabulations
+      complete: (results) => {
+        const data = results.data;
+        setFecData(data);
+        setIsFileLoaded(true);
+        
+        // Analyse automatique du FEC
+        analyzeFEC(data);
+        
+        setChatMessages(prev => [...prev, 
+          { role: 'assistant', content: `✅ Fichier FEC importé avec succès ! J'ai analysé ${data.length} écritures comptables. Je peux maintenant répondre à vos questions sur vos données réelles.` }
+        ]);
+      },
+      error: (error) => {
+        setChatMessages(prev => [...prev, 
+          { role: 'assistant', content: `❌ Erreur lors de l'import du fichier : ${error.message}. Assurez-vous qu'il s'agit d'un fichier FEC valide.` }
+        ]);
+      }
+    });
+  };
 
-                <!-- Feature 4 -->
-                <div class="glass rounded-xl p-8 hover:transform hover:scale-105 transition">
-                    <div class="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">Sécurité Maximale</h3>
-                    <p class="text-gray-400">Données chiffrées, hébergement EU, conformité RGPD. Vos données restent privées.</p>
-                </div>
+  const analyzeFEC = (data) => {
+    try {
+      // Calcul des revenus et dépenses
+      let totalRevenue = 0;
+      let totalExpenses = 0;
+      let entriesCount = data.length;
+      
+      const revenuesByWeek = {};
+      const expensesByWeek = {};
+      const categoriesMap = {};
 
-                <!-- Feature 5 -->
-                <div class="glass rounded-xl p-8 hover:transform hover:scale-105 transition">
-                    <div class="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">Analyse en Temps Réel</h3>
-                    <p class="text-gray-400">Résultats instantanés. Classification automatique des comptes selon le plan comptable français.</p>
-                </div>
-
-                <!-- Feature 6 -->
-                <div class="glass rounded-xl p-8 hover:transform hover:scale-105 transition">
-                    <div class="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">100% Cloud</h3>
-                    <p class="text-gray-400">Accessible partout, sur tous vos appareils. Aucune installation nécessaire.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="tarifs" class="py-20 bg-slate-900">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-white mb-4">Tarifs Transparents</h2>
-                <p class="text-xl text-gray-400">Commencez gratuitement, évoluez selon vos besoins</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Plan Gratuit -->
-                <div class="glass rounded-2xl p-8">
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-bold text-white mb-2">Gratuit</h3>
-                        <div class="text-5xl font-bold text-purple-400 mb-2">0€</div>
-                        <p class="text-gray-400">Pour toujours</p>
-                    </div>
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Manager dédié
-                        </li>
-                    </ul>
-                    <a href="#contact" class="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center px-6 py-3 rounded-lg transition">
-                        Nous contacter
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Demo Section -->
-    <section id="demo" class="py-20 bg-slate-800">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-white mb-4">Essayez Maintenant</h2>
-                <p class="text-xl text-gray-400">Testez gratuitement notre dashboard avec vos données</p>
-            </div>
-
-            <div class="glass rounded-2xl p-8 max-w-2xl mx-auto">
-                <form class="space-y-6">
-                    <div>
-                        <label class="block text-white font-semibold mb-2">Nom complet</label>
-                        <input type="text" class="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Jean Dupont">
-                    </div>
-                    <div>
-                        <label class="block text-white font-semibold mb-2">Email professionnel</label>
-                        <input type="email" class="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="jean@entreprise.fr">
-                    </div>
-                    <div>
-                        <label class="block text-white font-semibold mb-2">Entreprise</label>
-                        <input type="text" class="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Nom de votre entreprise">
-                    </div>
-                    <div>
-                        <label class="block text-white font-semibold mb-2">Taille de l'entreprise</label>
-                        <select class="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option>1-10 employés</option>
-                            <option>11-50 employés</option>
-                            <option>51-200 employés</option>
-                            <option>200+ employés</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 rounded-lg text-lg font-semibold transition transform hover:scale-105">
-                        Créer mon compte gratuit
-                    </button>
-                    <p class="text-center text-gray-400 text-sm">
-                        Aucune carte bancaire requise • Accès immédiat • Annulation à tout moment
-                    </p>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="py-20 bg-slate-900">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-white mb-4">Ils nous font confiance</h2>
-                <p class="text-xl text-gray-400">Des experts-comptables et entreprises utilisent notre solution</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="glass rounded-xl p-8">
-                    <div class="flex items-center gap-1 mb-4">
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                    </div>
-                    <p class="text-gray-300 mb-4">"Un outil indispensable pour nos clients. L'analyse automatique du FEC nous fait gagner un temps précieux."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">ML</div>
-                        <div>
-                            <div class="text-white font-semibold">Marie Lefebvre</div>
-                            <div class="text-gray-400 text-sm">Expert-comptable, Paris</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass rounded-xl p-8">
-                    <div class="flex items-center gap-1 mb-4">
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                    </div>
-                    <p class="text-gray-300 mb-4">"Interface intuitive et assistant IA très pertinent. Mes clients adorent la visualisation en temps réel."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">PD</div>
-                        <div>
-                            <div class="text-white font-semibold">Pierre Dubois</div>
-                            <div class="text-gray-400 text-sm">DAF, Lyon</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass rounded-xl p-8">
-                    <div class="flex items-center gap-1 mb-4">
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                    </div>
-                    <p class="text-gray-300 mb-4">"Déploiement rapide pour tous nos clients. La conformité RGPD et la sécurité sont au rendez-vous."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">SM</div>
-                        <div>
-                            <div class="text-white font-semibold">Sophie Martin</div>
-                            <div class="text-gray-400 text-sm">Cabinet comptable, Bordeaux</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-20 bg-slate-800">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-white mb-4">Une question ? Contactez-nous</h2>
-                <p class="text-xl text-gray-400">Notre équipe vous répond sous 24h</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-12">
-                <div class="space-y-8">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white mb-2">Email</h3>
-                            <p class="text-gray-400">contact@dashboardfec.fr</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white mb-2">Téléphone</h3>
-                            <p class="text-gray-400">+33 1 23 45 67 89</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white mb-2">Adresse</h3>
-                            <p class="text-gray-400">123 Avenue des Champs-Élysées<br>75008 Paris, France</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass rounded-2xl p-8">
-                    <form class="space-y-6">
-                        <div>
-                            <label class="block text-white font-semibold mb-2">Sujet</label>
-                            <select class="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <option>Question générale</option>
-                                <option>Demande de démo</option>
-                                <option>Support technique</option>
-                                <option>Tarifs entreprise</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-white font-semibold mb-2">Message</label>
-                            <textarea rows="6" class="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Votre message..."></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition">
-                            Envoyer le message
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-slate-900 py-12 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid md:grid-cols-4 gap-8 mb-8">
-                <div>
-                    <div class="flex items-center gap-2 mb-4">
-                        <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        <span class="text-2xl font-bold text-white">Dashboard<span class="text-purple-400">FEC</span></span>
-                    </div>
-                    <p class="text-gray-400">Analyse comptable intelligente avec IA pour professionnels.</p>
-                </div>
-
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Produit</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#fonctionnalites" class="text-gray-400 hover:text-white transition">Fonctionnalités</a></li>
-                        <li><a href="#tarifs" class="text-gray-400 hover:text-white transition">Tarifs</a></li>
-                        <li><a href="#demo" class="text-gray-400 hover:text-white transition">Démo</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Documentation</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Entreprise</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">À propos</a></li>
-                        <li><a href="#contact" class="text-gray-400 hover:text-white transition">Contact</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Carrières</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Légal</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Confidentialité</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">CGU</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">RGPD</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Mentions légales</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-gray-400 text-sm">© 2025 DashboardFEC. Tous droits réservés.</p>
-                <div class="flex gap-6">
-                    <a href="#" class="text-gray-400 hover:text-white transition">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                        </svg>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Scroll to Top Button -->
-    <a href="#" class="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-        </svg>
-    </a>
-
-    <script>
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
+      data.forEach(row => {
+        // Nettoyage des en-têtes (espaces)
+        const cleanRow = {};
+        Object.keys(row).forEach(key => {
+          cleanRow[key.trim()] = row[key];
         });
 
-        // Navbar background on scroll
-        window.addEventListener('scroll', () => {
-            const nav = document.querySelector('nav');
-            if (window.scrollY > 50) {
-                nav.style.background = 'rgba(15, 23, 42, 0.95)';
-            } else {
-                nav.style.background = 'rgba(255, 255, 255, 0.1)';
-            }
-        });
-    </script>
-</body>
-</html>zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Import FEC illimité
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Graphiques interactifs
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Assistant IA
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Sécurité HTTPS
-                        </li>
-                    </ul>
-                    <a href="#demo" class="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center px-6 py-3 rounded-lg transition">
-                        Commencer
-                    </a>
-                </div>
+        const debit = parseFloat(cleanRow.Debit || cleanRow.Montant || 0);
+        const credit = parseFloat(cleanRow.Credit || cleanRow['Montantau crédit'] || 0);
+        const compte = cleanRow.CompteNum || cleanRow['Numéro de compte'] || '';
+        const libelle = cleanRow.CompteLib || cleanRow.Libellé || cleanRow.EcritureLib || '';
+        const date = cleanRow.EcritureDate || cleanRow.Date || '';
 
-                <!-- Plan Pro -->
-                <div class="glass rounded-2xl p-8 border-2 border-purple-400 relative transform scale-105">
-                    <div class="absolute top-0 right-0 bg-purple-400 text-slate-900 px-4 py-1 rounded-bl-lg rounded-tr-lg font-semibold">
-                        Populaire
-                    </div>
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-bold text-white mb-2">Pro</h3>
-                        <div class="text-5xl font-bold text-purple-400 mb-2">49€</div>
-                        <p class="text-gray-400">par mois</p>
-                    </div>
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            <strong>Tout du gratuit +</strong>
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Multi-utilisateurs
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Stockage FEC (5GB)
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Historique illimité
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Export PDF/Excel
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Support prioritaire
-                        </li>
-                    </ul>
-                    <a href="#contact" class="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center px-6 py-3 rounded-lg transition">
-                        Démarrer l'essai gratuit
-                    </a>
-                </div>
+        // Classification des comptes (plan comptable français)
+        if (compte.startsWith('7')) {
+          totalRevenue += credit;
+          const week = getWeekNumber(date);
+          revenuesByWeek[week] = (revenuesByWeek[week] || 0) + credit;
+          
+          // Catégorisation
+          const category = getCategoryFromAccount(compte, libelle);
+          categoriesMap[category] = (categoriesMap[category] || 0) + credit;
+        } else if (compte.startsWith('6')) {
+          totalExpenses += debit;
+          const week = getWeekNumber(date);
+          expensesByWeek[week] = (expensesByWeek[week] || 0) + debit;
+        }
+      });
 
-                <!-- Plan Entreprise -->
-                <div class="glass rounded-2xl p-8">
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-bold text-white mb-2">Entreprise</h3>
-                        <div class="text-5xl font-bold text-purple-400 mb-2">Sur devis</div>
-                        <p class="text-gray-400">Solution personnalisée</p>
+      // Préparation des données pour les graphiques
+      const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
+      const monthlyRevenue = weeks.map((week, idx) => ({
+        name: week,
+        revenus: Math.round(revenuesByWeek[idx + 1] || 0),
+        depenses: Math.round(expensesByWeek[idx + 1] || 0)
+      }));
+
+      const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+      const categoryData = Object.entries(categoriesMap).map(([name, value], idx) => ({
+        name,
+        value: Math.round(value),
+        color: colors[idx % colors.length]
+      }));
+
+      const margin = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100).toFixed(1) : 0;
+
+      const kpiData = [
+        { icon: DollarSign, label: 'Revenus', value: formatCurrency(totalRevenue), change: '+12.5%', positive: true },
+        { icon: FileText, label: 'Écritures', value: entriesCount.toString(), change: '+5.1%', positive: true },
+        { icon: ShoppingCart, label: 'Dépenses', value: formatCurrency(totalExpenses), change: '+3.2%', positive: true },
+        { icon: TrendingUp, label: 'Marge', value: `${margin}%`, change: '+1.2%', positive: true }
+      ];
+
+      setDashboardData({
+        monthlyRevenue,
+        categoryData: categoryData.length > 0 ? categoryData : dashboardData.categoryData,
+        kpiData
+      });
+
+    } catch (error) {
+      console.error('Erreur analyse FEC:', error);
+    }
+  };
+
+  const getWeekNumber = (dateStr) => {
+    if (!dateStr) return 1;
+    try {
+      const date = new Date(dateStr);
+      const day = date.getDate();
+      return Math.ceil(day / 7);
+    } catch {
+      return 1;
+    }
+  };
+
+  const getCategoryFromAccount = (compte, libelle) => {
+    if (compte.startsWith('70')) return 'Ventes produits';
+    if (compte.startsWith('71')) return 'Production stockée';
+    if (compte.startsWith('72')) return 'Production immobilisée';
+    if (compte.startsWith('74')) return 'Subventions';
+    if (compte.startsWith('75')) return 'Autres produits';
+    if (compte.startsWith('76')) return 'Produits financiers';
+    if (compte.startsWith('77')) return 'Produits exceptionnels';
+    if (compte.startsWith('78')) return 'Reprises';
+    return 'Autres';
+  };
+
+  const formatCurrency = (value) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M€`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K€`;
+    return `${value.toFixed(0)}€`;
+  };
+
+  const aiResponses = {
+    fec: "Le format FEC (Fichier des Écritures Comptables) est le format standard pour l'export des données comptables en France. Cliquez sur le bouton 'Importer FEC' et sélectionnez votre fichier (généralement .txt ou .csv).",
+    revenus: `D'après votre fichier FEC, vos revenus totaux sont de ${dashboardData.kpiData[0].value}. ${isFileLoaded ? 'Ces données proviennent de vos écritures comptables réelles.' : 'Importez votre FEC pour voir vos données réelles.'}`,
+    comptes: "Les comptes de classe 7 représentent les produits (revenus), et les comptes de classe 6 représentent les charges (dépenses). Je les ai analysés automatiquement dans votre FEC.",
+    default: isFileLoaded 
+      ? "Je peux vous aider à analyser votre FEC. Posez-moi des questions sur vos revenus, dépenses, comptes ou écritures comptables." 
+      : "Importez d'abord votre fichier FEC pour que je puisse analyser vos données comptables réelles !"
+  };
+
+  const handleSendMessage = () => {
+    if (!inputMessage.trim()) return;
+
+    const userMessage = { role: 'user', content: inputMessage };
+    setChatMessages(prev => [...prev, userMessage]);
+
+    setTimeout(() => {
+      let response = aiResponses.default;
+      const msg = inputMessage.toLowerCase();
+      
+      if (msg.includes('fec') || msg.includes('import') || msg.includes('fichier')) {
+        response = aiResponses.fec;
+      } else if (msg.includes('revenu') || msg.includes('chiffre')) {
+        response = aiResponses.revenus;
+      } else if (msg.includes('compte') || msg.includes('classe')) {
+        response = aiResponses.comptes;
+      } else if (fecData && (msg.includes('analyse') || msg.includes('données'))) {
+        response = `J'ai analysé ${fecData.length} écritures comptables de votre FEC. Les revenus totaux sont de ${dashboardData.kpiData[0].value} et les dépenses de ${dashboardData.kpiData[2].value}. Que souhaitez-vous savoir de plus ?`;
+      }
+
+      setChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
+    }, 800);
+
+    setInputMessage('');
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">Dashboard Comptable</h1>
+            <p className="text-purple-300 text-lg">{currentMonth}</p>
+          </div>
+          
+          {/* Import FEC Button */}
+          <div className="relative">
+            <input
+              type="file"
+              id="fec-upload"
+              accept=".txt,.csv"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <label
+              htmlFor="fec-upload"
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg cursor-pointer transition-colors"
+            >
+              {isFileLoaded ? <Check className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
+              {isFileLoaded ? 'FEC Chargé' : 'Importer FEC'}
+            </label>
+            {fileName && (
+              <p className="text-xs text-purple-300 mt-2 text-right">{fileName}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Status Bar */}
+        {isFileLoaded && (
+          <div className="mb-6 bg-green-500/20 border border-green-500/40 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-green-300">
+              <Check className="w-5 h-5" />
+              <span className="font-medium">Fichier FEC importé - {fecData?.length || 0} écritures analysées</span>
+            </div>
+          </div>
+        )}
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {dashboardData.kpiData.map((kpi, idx) => (
+            <div key={idx} className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+              <div className="flex items-center justify-between mb-4">
+                <kpi.icon className="w-8 h-8 text-purple-400" />
+                <span className={`text-sm font-semibold ${kpi.positive ? 'text-green-400' : 'text-red-400'}`}>
+                  {kpi.change}
+                </span>
+              </div>
+              <p className="text-gray-300 text-sm mb-1">{kpi.label}</p>
+              <p className="text-3xl font-bold text-white">{kpi.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Charts Section */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Revenue Chart */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+              <h3 className="text-xl font-semibold text-white mb-4">Revenus & Dépenses Mensuels</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={dashboardData.monthlyRevenue}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                  <XAxis dataKey="name" stroke="#fff" />
+                  <YAxis stroke="#fff" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1e1b4b', border: '1px solid #8b5cf6' }}
+                    labelStyle={{ color: '#fff' }}
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="revenus" stroke="#3b82f6" strokeWidth={3} />
+                  <Line type="monotone" dataKey="depenses" stroke="#ef4444" strokeWidth={3} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Category Chart */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+              <h3 className="text-xl font-semibold text-white mb-4">Répartition par Catégorie</h3>
+              <div className="flex items-center justify-between">
+                <ResponsiveContainer width="50%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={dashboardData.categoryData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label
+                    >
+                      {dashboardData.categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-3">
+                  {dashboardData.categoryData.map((cat, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: cat.color }}></div>
+                      <div>
+                        <p className="text-white font-medium">{cat.name}</p>
+                        <p className="text-gray-400 text-sm">{cat.value.toLocaleString()}€</p>
+                      </div>
                     </div>
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            <strong>Tout du Pro +</strong>
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Utilisateurs illimités
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Hébergement dédié France
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            API personnalisée
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            SLA 99.9%
-                        </li>
-                        <li class="flex items-center gap-2 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Chat Section */}
+          <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 flex flex-col h-[600px]">
+            <div className="p-4 border-b border-white/20 flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-purple-400" />
+              <h3 className="text-xl font-semibold text-white">Assistant IA</h3>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {chatMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] rounded-lg p-3 ${
+                    msg.role === 'user' 
+                      ? 'bg-purple-600 text-white' 
+                      : 'bg-white/20 text-gray-100'
+                  }`}>
+                    {msg.role === 'assistant' && (
+                      <Sparkles className="w-4 h-4 inline mr-2 text-purple-400" />
+                    )}
+                    <span className="text-sm">{msg.content}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 border-t border-white/20">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="Posez une question..."
+                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <button
+                  onClick={handleSendMessage}
+                  className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-4 py-2 transition-colors"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Essayez : "Analyse mon FEC", "Quels sont mes revenus ?", "Explique les comptes"
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MonthlyDashboard;
